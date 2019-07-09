@@ -66,7 +66,7 @@ describe('module loader', function() {
   });
 
 
-  it("should not throw error when `module.decorator` is declared before provider that it decorates", function() {
+  it('should not throw error when `module.decorator` is declared before provider that it decorates', function() {
     angular.module('theModule', []).
       decorator('theProvider', function($delegate) { return $delegate; }).
       factory('theProvider', function() { return {}; });
@@ -77,7 +77,7 @@ describe('module loader', function() {
   });
 
 
-  it("should run decorators in order of declaration, even when mixed with provider.decorator", function() {
+  it('should run decorators in order of declaration, even when mixed with provider.decorator', function() {
     var log = '';
 
     angular.module('theModule', [])
@@ -107,19 +107,24 @@ describe('module loader', function() {
   });
 
 
-  it("should decorate the last declared provider if multiple have been declared", function() {
+  it('should decorate the last declared provider if multiple have been declared', function() {
     var log = '';
 
     angular.module('theModule', []).
-      factory('theProvider', function() { return {
-        api: 'firstProvider'
-      }; }).
+      factory('theProvider', function() {
+        return {
+          api: 'firstProvider'
+        };
+      }).
       decorator('theProvider', function($delegate) {
         $delegate.api = $delegate.api + '-decorator';
-        return $delegate; }).
-      factory('theProvider', function() { return {
-        api: 'secondProvider'
-      }; }).
+        return $delegate;
+      }).
+      factory('theProvider', function() {
+        return {
+          api: 'secondProvider'
+        };
+      }).
       run(function(theProvider) {
         log = theProvider.api;
       });
@@ -137,18 +142,49 @@ describe('module loader', function() {
   it('should complain of no module', function() {
     expect(function() {
       window.angular.module('dontExist');
-    }).toThrowMinErr("$injector", "nomod", "Module 'dontExist' is not available! You either misspelled the module name " +
-            "or forgot to load it. If registering a module ensure that you specify the dependencies as the second " +
-            "argument.");
+    }).toThrowMinErr('$injector', 'nomod', 'Module \'dontExist\' is not available! You either misspelled the module name ' +
+            'or forgot to load it. If registering a module ensure that you specify the dependencies as the second ' +
+            'argument.');
   });
 
   it('should complain if a module is called "hasOwnProperty', function() {
     expect(function() {
       window.angular.module('hasOwnProperty', []);
-    }).toThrowMinErr('ng','badname', "hasOwnProperty is not a valid module name");
+    }).toThrowMinErr('ng','badname', 'hasOwnProperty is not a valid module name');
   });
 
   it('should expose `$$minErr` on the `angular` object', function() {
     expect(window.angular.$$minErr).toEqual(jasmine.any(Function));
+  });
+
+  describe('Module', function() {
+    describe('info()', function() {
+      var theModule;
+
+      beforeEach(function() {
+        theModule = angular.module('theModule', []);
+      });
+
+      it('should default to an empty object', function() {
+        expect(theModule.info()).toEqual({});
+      });
+
+      it('should store the object passed as a param', function() {
+        theModule.info({ version: '1.2' });
+        expect(theModule.info()).toEqual({ version: '1.2' });
+      });
+
+      it('should throw if the parameter is not an object', function() {
+        expect(function() {
+          theModule.info('some text');
+        }).toThrowMinErr('ng', 'aobj');
+      });
+
+      it('should completely replace the previous info object', function() {
+        theModule.info({ value: 'X' });
+        theModule.info({ newValue: 'Y' });
+        expect(theModule.info()).toEqual({ newValue: 'Y' });
+      });
+    });
   });
 });
